@@ -86,3 +86,4 @@ typings/
 
 # DynamoDB Local files
 .dynamodb/
+SWEXPORTER/sw-exporter-0.0.31/package-lock.json
