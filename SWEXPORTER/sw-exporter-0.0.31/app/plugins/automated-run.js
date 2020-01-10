@@ -46,6 +46,12 @@ module.exports = {
           case 'BattleRiftOfWorldsRaidResult':
             sendData(proxy,resp,command)
             break;
+          case 'BattleRiftDungeonResult':
+            sendData(proxy,resp,command)
+            break;
+          case 'battleGuildMazeResult':
+            sendData(proxy,resp,command)
+            break;
         }
       }
     });

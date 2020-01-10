@@ -12,6 +12,7 @@
 #Giants/Necro/Dragon Cord
 #Usually 10 to avoid captcha
 refill_count_limit = 10
+fail_count_limit = 3
 replay_button_cord = [500, 500]
 ok_button_cord = [800, 690]
 corner_spot_cord = [1550, 10]

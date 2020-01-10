@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="df02af2c-748e-447b-b492-ee6f0cec69a6" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../SWEXPORTER/sw-exporter-0.0.31/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../SWEXPORTER/sw-exporter-0.0.31/package-lock.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/e7auto.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../SWEXPORTER/sw-exporter-0.0.31/app/plugins/automated-run.js" beforeDir="false" afterPath="$PROJECT_DIR$/../SWEXPORTER/sw-exporter-0.0.31/app/plugins/automated-run.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/autorunAPI_adb.py" beforeDir="false" afterPath="$PROJECT_DIR$/autorunAPI_adb.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/settings.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -43,28 +44,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.autorunAPI_adb">
-    <configuration name="EssenceDungeon" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="SW-Trainer" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/EssenceDungeon.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
+  <component name="RunManager" selected="Python.e7auto">
     <configuration name="adbAuto" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="SW-Trainer" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -128,6 +108,27 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="e7auto" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="SW-Trainer" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/e7auto.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="mouseposition" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="SW-Trainer" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -151,11 +152,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.e7auto" />
         <item itemvalue="Python.autorunAPI_adb" />
         <item itemvalue="Python.adbAuto" />
         <item itemvalue="Python.autorunAPI" />
         <item itemvalue="Python.mouseposition" />
-        <item itemvalue="Python.EssenceDungeon" />
       </list>
     </recent_temporary>
   </component>
@@ -177,7 +178,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>

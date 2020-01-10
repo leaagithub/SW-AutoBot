@@ -7,6 +7,7 @@ from flask import request, jsonify
 
 run_count = 0
 refill_count = 0
+fail_count = 0
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 adb = adbutils.AdbClient(host="127.0.0.1", port=5037)
@@ -20,6 +21,14 @@ def rune_quality_check(rune):
     if rune['class'] < 6:
         print('Only Keep 6 star')
         return True
+    if rune['set_id'] == 13:
+        print('Found 6 star violent rune')
+        if not keep_hp_slot(rune):
+            return False
+    if rune['set_id'] == 19:
+        print('Found 6 star fight rune')
+        if not keep_hp_slot(rune):
+            return False
     if rune['rank'] < 4:
         print('Only Keep Purples and Up')
         return True
@@ -34,6 +43,20 @@ def rune_quality_check(rune):
             print('Found Spd Sub')
             return False
     print('Found No Spd Sub')
+    return True
+
+
+def keep_hp_slot(rune):
+    if rune['slot_no'] == 4 or rune['slot_no'] == 6:
+        print('Found Slot 4/6')
+        if rune['pri_eff'][0] == 2:
+            print('Prim Eff Hp% now checking subs')
+            for subStats in rune['sec_eff']:
+                if subStats[0] == 8:
+                    print('Found Spd Sub')
+                    return False
+            print('Found No Spd Sub, checking others.....')
+            return True
     return True
 
 
@@ -89,7 +112,7 @@ def home():
     grab_chest()
     try:
         if data['reward']['crate']['rune']:
-            print(data['reward'])
+            print(data['reward']['crate']['rune'])
             if rune_quality_check(data['reward']['crate']['rune']):
                 move_mouse(sell_rune_cord[0], sell_rune_cord[1])
                 move_mouse(sell_rune_confirm_cord[0], sell_rune_confirm_cord[1])
@@ -111,6 +134,7 @@ def home():
         if refill_count == refill_count_limit:
             sys.exit()
             shutdown()
+            exit()
         refill_energy()
         move_mouse(replay_button_cord[0], replay_button_cord[1])
     run_count += 1
@@ -143,14 +167,43 @@ def dim_hole_result():
 def toa_result():
     global run_count
     global refill_count
+    global fail_count
     print(request.json)
     data = request.json
-    grab_chest()
-    move_mouse(ok_button_cord[0], ok_button_cord[1])
-    move_mouse(replay_button_cord[0], replay_button_cord[1])
-    move_mouse(start_battle_button_cord[0], start_battle_button_cord[1])
-    refill_energy()
-    move_mouse(start_battle_button_cord[0], start_battle_button_cord[1])
+    if data['win_lose'] == 1:
+        grab_chest()
+        move_mouse(ok_button_cord[0], ok_button_cord[1])
+        move_mouse(replay_button_cord[0], replay_button_cord[1])
+        move_mouse(start_battle_button_cord[0], start_battle_button_cord[1])
+        # refill_energy()
+        # move_mouse(start_battle_button_cord[0], start_battle_button_cord[1])
+    else:
+        move_mouse(ok_button_cord[0], ok_button_cord[1])
+        move_mouse(ok_button_cord[0], ok_button_cord[1])
+        move_mouse(replay_button_cord[0], replay_button_cord[1])
+        move_mouse(start_battle_button_cord[0], start_battle_button_cord[1])
+        fail_count += 1
+        if fail_count == fail_count_limit:
+            print("Too many fails")
+            sys.exit()
+            shutdown()
+    return jsonify({"message": "Good Response"})
+
+
+@app.route('/BattleRiftDungeonResult/', methods=['POST'])
+def rift_dungeons():
+    global run_count
+    global refill_count
+    print(request.json)
+    data = request.json
+    print(data['item_list'][3]['info'])
+    return jsonify({"message": "Good Response"})
+
+
+@app.route('/getGuildMazeClearRewardCrateSummary/', methods=['POST'])
+def guild_maze_reward():
+    print(request.json)
+    data = request.json
     return jsonify({"message": "Good Response"})
 
 
