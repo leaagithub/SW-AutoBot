@@ -151,7 +151,6 @@ def dim_hole_result():
     grab_chest()
     try:
         if data['reward']['crate']['rune']:
-            print(data['reward'])
             if rune_quality_check(data['reward']['crate']['rune']):
                 move_mouse(sell_rune_cord[0], sell_rune_cord[1])
                 move_mouse(sell_rune_confirm_cord[0], sell_rune_confirm_cord[1])
