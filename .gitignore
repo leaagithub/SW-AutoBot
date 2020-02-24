@@ -87,3 +87,7 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 SWEXPORTER/sw-exporter-0.0.31/package-lock.json
+SWTrainer/.idea/workspace.xml
+SWTrainer/.idea/runConfigurations/autorunAPI_adb.xml
+SWTrainer/.idea/workspace.xml
+SWTrainer/.idea/workspace.xml

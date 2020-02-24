@@ -18,13 +18,13 @@ d = adb.device(serial="emulator-5554")
 
 
 def rune_quality_check(rune):
+    if rune['set_id'] == 13:
+        print('Found violent rune')
+        if not keep_hp_slot(rune):
+            return False
     if rune['class'] < 6:
         print('Only Keep 6 star')
         return True
-    if rune['set_id'] == 13:
-        print('Found 6 star violent rune')
-        if not keep_hp_slot(rune):
-            return False
     if rune['set_id'] == 19:
         print('Found 6 star fight rune')
         if not keep_hp_slot(rune):
@@ -49,14 +49,17 @@ def rune_quality_check(rune):
 def keep_hp_slot(rune):
     if rune['slot_no'] == 4 or rune['slot_no'] == 6:
         print('Found Slot 4/6')
-        if rune['pri_eff'][0] == 2:
-            print('Prim Eff Hp% now checking subs')
-            for subStats in rune['sec_eff']:
-                if subStats[0] == 8:
-                    print('Found Spd Sub')
-                    return False
-            print('Found No Spd Sub, checking others.....')
-            return True
+        if rune['rank'] < 4:
+            print('Only Keep Purples and Up')
+            if rune['pri_eff'][0] == 2:
+                print('Prim Eff Hp% now checking subs')
+                for subStats in rune['sec_eff']:
+                    if subStats[0] == 8:
+                        print('Found Spd Sub keep the rune')
+                        return False
+                print('Found No Spd Sub return bad')
+                return True
+    print('bad rune not in slot 4 or 6')
     return True
 
 
