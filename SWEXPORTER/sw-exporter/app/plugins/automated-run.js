@@ -61,6 +61,9 @@ module.exports = {
           case 'pickGuildMazeBattleClearReward':
             sendData(proxy,resp,command)
             break;
+          case 'BattleEventInstanceResult':
+            sendData(proxy,resp,command)
+            break;
         }
       }
     });

@@ -6,13 +6,15 @@ import time
 from flask import request, jsonify
 from SWTrainer.bluestack_settings import *
 
-from SWTrainer.bluestack_settings import refill_count_limit, replay_button_cord, ok_button_cord, get_rune_cord, \
-    sell_rune_confirm_cord, sell_rune_cord, corner_spot_cord
-
-os.system("bluestack_settings.py")
+# from bluestack_settings import *
+os.system('cmd /c "HD-adb kill-server"')
+os.system('cmd /c "HD-adb start-server"')
+time.sleep(5)
+os.system('cmd /c "HD-adb devices"')
 run_count = 0
 refill_count = 0
 fail_count = 0
+runes_kept = 0
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 adb = adbutils.AdbClient(host="127.0.0.1", port=5037)
@@ -21,7 +23,8 @@ output = adb.connect("127.0.0.1:5555")
 print(output)
 d = adb.device(serial="emulator-5554")
 
-#C:\Program Files\BlueStacks
+
+# C:\Program Files\BlueStacks
 
 def __init__(self):
     pass
@@ -54,11 +57,23 @@ def rune_quality_check(rune):
     if rune['rank'] < 4:
         print('Only Keep Purples and Up')
         return True
+    if rune['set_id'] == 8:
+        print('Found fatal purple rune')
+        if not atk_subs(rune):
+            return False
+    if rune['set_id'] == 5:
+        print('Found rage purple rune')
+        if not atk_subs(rune):
+            return False
+    if rune['set_id'] == 4:
+        print('Found blade purple rune')
+        if not atk_subs(rune):
+            return False
     if rune['pri_eff'][0] == 8:
         print('Purple Spd Slot 2')
         return False
     if rune['pri_eff'][0] == 10:
-        print('Purple CD Slot 4')
+        print('Purple Crit dmg Slot 4')
         return False
     if rune['pri_eff'][0] == 4 and rune['slot_no'] == 6:
         print('Purple Atk Slot 6')
@@ -110,7 +125,7 @@ def ancient_rune_quality_check(rune):
 
 
 def keep_hp_slot(rune):
-    #True is pass on rune False is keep the rune
+    # True is pass on rune False is keep the rune
     if rune['class'] == 5:
         if rune['rank'] < 5:
             print('Not 5 star legendary')
@@ -129,6 +144,23 @@ def keep_hp_slot(rune):
             print('6 star rune spd sub keep')
             return False
     print('Found No Spd Sub return bad')
+    return True
+
+
+def atk_subs(rune):
+    for subStats in rune['sec_eff']:
+        if subStats[0] == 9:
+            print('6 star rune crt sub keep')
+            return False
+    for subStats in rune['sec_eff']:
+        if subStats[0] == 10:
+            print('6 star rune crit dmg sub keep')
+            return False
+    for subStats in rune['sec_eff']:
+        if subStats[0] == 4:
+            print('6 star rune atk% sub keep')
+            return False
+    print('Found No atk sub return bad')
     return True
 
 
@@ -173,18 +205,18 @@ def ancient_keep_spd_sub(rune):
 
 
 def move_mouse(x, y):
-    time.sleep(1)
+    time.sleep(.5)
     d.click(x, y)
-    time.sleep(1)
+    time.sleep(.5)
 
 
 def grab_chest():
     time.sleep(10)
     move_mouse(corner_spot_cord[0], corner_spot_cord[1])
-    time.sleep(1)
+    time.sleep(.5)
     move_mouse(corner_spot_cord[0], corner_spot_cord[1])
     d.click(corner_spot_cord[0], corner_spot_cord[1])
-    time.sleep(1)
+    time.sleep(.5)
     d.click(corner_spot_cord[0], corner_spot_cord[1])
     move_mouse(corner_spot_cord[0], corner_spot_cord[1])
 
@@ -219,7 +251,9 @@ def raid_drop_check(drop):
     if drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_rank'] == 5:
         print('Keep legend')
         return True
-    if drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 5 or drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 1 or drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 3:
+    if drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 5 or \
+            drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 1 or \
+            drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 3:
         print('Sell Flat stats')
         return False
     return True
@@ -364,9 +398,10 @@ def guild_maze_result():
 def carios_dungeon():
     global run_count
     global refill_count
+    global runes_kept
     data = request.json
     grab_chest()
-    print(data['changed_item_list'])
+    # print(data['changed_item_list'])
     if data['changed_item_list'][0]['type'] == 8:
         print('Found Rune!')
         print(data['changed_item_list'][0]['info'])
@@ -376,6 +411,7 @@ def carios_dungeon():
             move_mouse(sell_rune_confirm_cord[0], sell_rune_confirm_cord[1])
         else:
             print('Getting Rune')
+            runes_kept += 1
             move_mouse(get_rune_cord[0], get_rune_cord[1])
     else:
         print('No Rune Found!')
@@ -384,8 +420,7 @@ def carios_dungeon():
     move_mouse(replay_button_cord[0], replay_button_cord[1])
     if data['wizard_info']['wizard_energy'] < 8:
         refill_count += 1
-        print('Refill Count ')
-        print(refill_count)
+        print('Refill Count ', refill_count)
         if refill_count == refill_count_limit:
             sys.exit()
             shutdown()
@@ -393,7 +428,8 @@ def carios_dungeon():
         refill_energy()
         move_mouse(replay_button_cord[0], replay_button_cord[1])
     run_count += 1
-    print(run_count)
+    print('Run Count ', run_count)
+    print('Rune Kept ', runes_kept)
     return jsonify({"message": "Good Response"})
 
 
@@ -411,7 +447,8 @@ def raid_dungeon():
     time.sleep(.2)
     d.click(open_chest[0], open_chest[1])
     print('Done Clicks')
-    if data['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_type'] == 1 or data['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_type'] == 2:
+    if data['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_type'] == 1 or \
+            data['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_type'] == 2:
         print('Found Grind/Gem')
         if raid_drop_check(data):
             print('Keep')
@@ -438,6 +475,30 @@ def raid_dungeon():
         d.click(restart_run[0], restart_run[1])
     time.sleep(1.7)
     d.click(raid_start_battle[0], raid_start_battle[1])
+    return jsonify({"message": "Good Response"})
+
+
+@app.route('/BattleEventInstanceResult/', methods=['POST'])
+def event_dungeon():
+    global run_count
+    global refill_count
+    global runes_kept
+    data = request.json
+    grab_chest()
+    move_mouse(sd_pieces_cord[0], sd_pieces_cord[1])
+    move_mouse(replay_button_cord[0], replay_button_cord[1])
+    if data['wizard_info']['wizard_energy'] < 5:
+        refill_count += 1
+        print('Refill Count ', refill_count)
+        if refill_count == refill_count_limit:
+            sys.exit()
+            shutdown()
+            exit()
+        refill_energy()
+        move_mouse(replay_button_cord[0], replay_button_cord[1])
+    run_count += 1
+    print('Run Count ', run_count)
+    print('Rune Kept ', runes_kept)
     return jsonify({"message": "Good Response"})
 
 

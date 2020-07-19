@@ -28,6 +28,7 @@ get_rune_cord = [930, 720]
 refill_button_cord = [720, 530]
 refill_shop_exit_cord = [1500, 100]
 event_ok_button_cord = [800, 690]
+sd_pieces_cord = [800, 677]
 
 # Dim Hole Cord
 dim_hole_ok_button_cord = [800, 750]
