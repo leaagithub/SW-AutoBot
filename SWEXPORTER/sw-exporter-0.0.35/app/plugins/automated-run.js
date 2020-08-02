@@ -52,6 +52,18 @@ module.exports = {
           case 'battleGuildMazeResult':
             sendData(proxy,resp,command)
             break;
+          case 'BattleDungeonResult_V2':
+            sendData(proxy,resp,command)
+            break;
+          case 'getGuildMazeClearRewardCrateSummary':
+            sendData(proxy,resp,command)
+            break;
+          case 'pickGuildMazeBattleClearReward':
+            sendData(proxy,resp,command)
+            break;
+          case 'BattleEventInstanceResult':
+            sendData(proxy,resp,command)
+            break;
         }
       }
     });

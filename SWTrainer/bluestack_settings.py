@@ -42,7 +42,7 @@ rift_sell_rune_cord = [660, 660]
 rift_sell_rune_confirm_cord = [650, 530]
 
 #Raid 5 Coords
-raid_player_slot = 1
+raid_player_slot = 0
 raid_start_battle = [1414, 777]
 open_chest = [1500, 55]
 get_grind = [920, 630]

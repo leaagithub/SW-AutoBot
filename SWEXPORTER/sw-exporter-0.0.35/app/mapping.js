@@ -7,6 +7,14 @@ module.exports = {
       4: 'Light',
       5: 'Dark'
     },
+    archetypes: {
+      0: 'None',
+      1: 'Attack',
+      2: 'Defense',
+      3: 'HP',
+      4: 'Support',
+      5: 'Material'
+    },
     names: {
       101: 'Fairy',
       10111: 'Elucia',
@@ -132,6 +140,11 @@ module.exports = {
       11513: 'Bernard',
       11514: 'Shamann',
       11515: 'Varus',
+      11531: 'Kahn',
+      11532: 'Spectra',
+      11533: 'Bernard',
+      11534: 'Shamann',
+      11535: 'Varus',
 
       116: 'Undine',
       11611: 'Mikene',
@@ -307,6 +320,11 @@ module.exports = {
       14013: 'Shakan',
       14014: 'Eshir',
       14015: 'Jultan',
+      14031: 'Vigor',
+      14032: 'Garoche',
+      14033: 'Shakan',
+      14034: 'Eshir',
+      14035: 'Jultan',
 
       141: 'Phantom Thief',
       14111: 'Luer',
@@ -370,6 +388,11 @@ module.exports = {
       15013: 'Naomi',
       15014: 'Xiao Ling',
       15015: 'Miho',
+      15031: 'Mina',
+      15032: 'Mei',
+      15033: 'Naomi',
+      15034: 'Xiao Ling',
+      15035: 'Miho',
 
       152: 'Vagabond',
       15211: 'Allen',
@@ -600,7 +623,7 @@ module.exports = {
       18512: 'Nangrim',
       18513: 'Suri',
       18514: 'Baekdu',
-      18515: 'Hannam',
+      18515: 'Hanra',
 
       186: 'Pioneer',
       18611: 'Woosa',
@@ -916,6 +939,33 @@ module.exports = {
       23413: 'Malite',
       23414: 'Pheneka',
       23415: 'Onyx',
+
+      235: 'Beast Rider',
+      23511: 'Barbara',
+      23512: 'Masha',
+      23513: 'Savannah',
+      23514: 'Narsha',
+      23515: 'Xiana',
+      236: 'Beast Rider',
+      23611: 'Barbara',
+      23612: 'Masha',
+      23613: 'Savannah',
+      23614: 'Narsha',
+      23615: 'Xiana',
+
+      237: 'Art Master',
+      23711: 'Haegang',
+      23712: 'Jeogun',
+      23713: 'Cheongpung',
+      23714: 'Hanwul',
+      23715: 'Mookwol',
+
+      239: 'String Master',
+      23911: 'Songseol',
+      23912: 'Hongyeon',
+      23913: 'Yeonhwa',
+      23914: 'Dongbaek',
+      23915: 'Mirinae',
 
       15105: 'Devilmon',
       14314: 'Rainbowmon',
@@ -1418,6 +1468,71 @@ module.exports = {
     }
   },
 
+  artifact: {
+    effectTypes: {
+      main: {
+        100: 'HP flat',
+        101: 'ATK flat',
+        102: 'DEF flat'
+      },
+      sub: {
+        200: value => `ATK Increased Proportional to Lost HP up to ${value}%`,
+        201: value => `DEF Increased Proportional to Lost HP up to ${value}%`,
+        202: value => `SPD Increased Proportional to Lost HP up to ${value}%`,
+        203: value => `SPD Under Inability Effects +${value}%`,
+        204: value => `ATK Increasing Effect +${value}%`,
+        205: value => `DEF Increasing Effect +${value}%`,
+        206: value => `SPD Increasing Effect +${value}%`,
+        207: value => `Crit Rate Increasing Effect +${value}%`,
+        208: value => `Damage Dealt by Counterattack +${value}%`,
+        209: value => `Damage Dealt by Attacking Together +${value}%`,
+        210: value => `Bomb Damage +${value}%`,
+        211: value => `Damage Dealt by Reflected DMG +${value}%`,
+        212: value => `Crushing Hit DMG +${value}%`,
+        213: value => `Damage Received Under Inability Effect -${value}%`,
+        214: value => `Received Crit DMG -${value}%`,
+        215: value => `Life Drain +${value}%`,
+        216: value => `HP when Revived +${value}%`,
+        217: value => `Attack Bar when Revived +${value}%`,
+        218: value => `Additional Damage by ${value}% of HP`,
+        219: value => `Additional Damage by ${value}% of ATK`,
+        220: value => `Additional Damage by ${value}% of DEF`,
+        221: value => `Additional Damage by ${value}% of SPD`,
+        300: value => `Damage Dealt on Fire +${value}%`,
+        301: value => `Damage Dealt on Water +${value}%`,
+        302: value => `Damage Dealt on Wind +${value}%`,
+        303: value => `Damage Dealt on Light +${value}%`,
+        304: value => `Damage Dealt on Dark +${value}%`,
+        305: value => `Damage Received from Fire -${value}%`,
+        306: value => `Damage Received from Water -${value}%`,
+        307: value => `Damage Received from Wind -${value}%`,
+        308: value => `Damage Received from Light -${value}%`,
+        309: value => `Damage Received from Dark -${value}%`,
+        400: value => `Skill 1 CRIT DMG +${value}%`,
+        401: value => `Skill 2 CRIT DMG +${value}%`,
+        402: value => `Skill 3 CRIT DMG +${value}%`,
+        403: value => `Skill 4 CRIT DMG +${value}%`,
+        404: value => `Skill 1 Recovery +${value}%`,
+        405: value => `Skill 2 Recovery +${value}%`,
+        406: value => `Skill 3 Recovery +${value}%`,
+        407: value => `Skill 1 Accuracy +${value}%`,
+        408: value => `Skill 2 Accuracy +${value}%`,
+        409: value => `Skill 3 Accuracy +${value}%`
+      }
+    },
+    types: {
+      1: 'Attribute',
+      2: 'Archetype'
+    },
+    rank: {
+      1: 'Common',
+      2: 'Magic',
+      3: 'Rare',
+      4: 'Hero',
+      5: 'Legendary'
+    }
+  },
+
   scenario: {
     1: 'Garen Forest',
     2: 'Mt. Siz',
@@ -1448,7 +1563,9 @@ module.exports = {
     6001: 'Necropolis',
     7001: 'Hall of Light',
     8001: `Giant's Keep`,
-    9001: `Dragon's Lair`
+    9001: `Dragon's Lair`,
+    9501: 'Steel Fortress',
+    9502: `Punisher's Crypt`
   },
   elemental_rift_dungeon: {
     1001: 'Rift Dungeon - Ice Beast',
@@ -1565,6 +1682,22 @@ module.exports = {
     };
 
     return effectTypeStrings[type];
+  },
+  getArtifactEffect(eff, mainStat = true) {
+    const type = eff[0];
+    const value = eff[1];
+
+    if (mainStat) {
+      const mainStatEffectTypeStrings = {
+        100: `HP +${value}`,
+        101: `ATK +${value}`,
+        102: `DEF +${value}`
+      };
+
+      return mainStatEffectTypeStrings[type];
+    } else {
+      return this.artifact.effectTypes.sub[type](value);
+    }
   },
   isAncient(item) {
     if (item.craft_type) {

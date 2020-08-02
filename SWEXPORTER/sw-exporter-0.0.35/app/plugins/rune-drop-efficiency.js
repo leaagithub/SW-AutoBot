@@ -2,8 +2,8 @@ module.exports = {
   defaultConfig: {
     enabled: true
   },
-  pluginName: 'Sell-Response-Plugin',
-  pluginDescription: 'Tells you if a rune is worth keeping or not.',
+  pluginName: 'RuneDropEfficiency',
+  pluginDescription: 'Logs the maximum possible efficiency for runes as they drop.',
   init(proxy) {
     proxy.on('apiCommand', (req, resp) => {
       if (config.Config.Plugins[this.pluginName].enabled) {
@@ -28,6 +28,19 @@ module.exports = {
           }
         }
         break;
+      case 'BattleDungeonResult_V2':
+        if (resp.win_lose === 1) {
+          const rewards = resp.changed_item_list ? resp.changed_item_list : [];
+
+          if (rewards) {
+            rewards.forEach(reward => {
+              if (reward.type === 8) {
+                runesInfo.push(this.logRuneDrop(reward.info));
+              }
+            });
+          }
+        }
+        break;
       case 'UpgradeRune': {
         const originalLevel = req.upgrade_curr;
         const newLevel = resp.rune.upgrade_curr;
@@ -38,6 +51,9 @@ module.exports = {
         break;
       }
       case 'AmplifyRune':
+      case 'AmplifyRune_v2':
+      case 'ConvertRune':
+      case 'ConvertRune_v2':
       case 'ConfirmRune':
         runesInfo.push(this.logRuneDrop(resp.rune));
         break;
@@ -122,12 +138,43 @@ module.exports = {
     };
 
     let color = colorTable[runeQuality];
+    let starHtml = this.mountStarsHtml(rune);
+
+    return `<div class="rune item">
+              <div class="ui image ${color} label">
+                <img src="../assets/runes/${gMapping.rune.sets[rune.set_id]}.png" />
+                <span class="upgrade">+${rune.upgrade_curr}</span>  
+              </div>
+
+              <div class="content">
+                ${starHtml}
+                <div class="header">${gMapping.isAncient(rune) ? 'Ancient ' : ''}${gMapping.rune.sets[rune.set_id]} Rune (${rune.slot_no}) ${
+      gMapping.rune.effectTypes[rune.pri_eff[0]]
+    }</div>
+                <div class="description">Efficiency: ${efficiency.current}%. ${rune.upgrade_curr < 12 ? `Max: ${efficiency.max}%` : ''}</div>
+              </div>
+            </div>`;
+  },
+
+  mountStarsHtml(rune) {
+    let count = 0;
+    let html = '<div class="star-line">';
     let runeClass = gMapping.isAncient(rune) ? rune.class - 10 : rune.class;
-    if ((runeClass == 6 && color == orange)||(runeClass == 6 && color == purple)){
-		return '<img src="../assets/icons/sell-pic.png" />'; 
-	}
-	else {
-		return '<img src="../assets/icons/sell-pic.png" />'; 
-	}
+    while (count < runeClass) {
+      html = html.concat('<span class="star"><img src="../assets/icons/star-unawakened.png" /></span>');
+      count += 1;
+    }
+
+    return html.concat('</div>');
+  },
+
+  mountRuneListHtml(runes) {
+    let message = '<div class="runes ui list relaxed">';
+
+    runes.forEach(rune => {
+      message = message.concat(rune);
+    });
+
+    return message.concat('</div>');
   }
 };

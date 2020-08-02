@@ -7,14 +7,16 @@ from flask import request, jsonify
 from SWTrainer.bluestack_settings import *
 
 # from bluestack_settings import *
-os.system('cmd /c "HD-adb kill-server"')
-os.system('cmd /c "HD-adb start-server"')
-time.sleep(5)
+# os.system('cmd /c "HD-adb kill-server"')
+# os.system('cmd /c "HD-adb start-server"')
+# time.sleep(5)
 os.system('cmd /c "HD-adb devices"')
 run_count = 0
 refill_count = 0
 fail_count = 0
 runes_kept = 0
+grind_kept = 0
+artifact_kept = 0
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 adb = adbutils.AdbClient(host="127.0.0.1", port=5037)
@@ -107,21 +109,86 @@ def ancient_rune_quality_check(rune):
     if rune['class'] < 16:
         print('Only Keep 6 star')
         return True
+    if rune['rank'] == 15:
+        print('Legend 6 Star Keep')
+        return False
     if rune['rank'] < 14:
         print('Only Keep Purples and Up')
         return True
     if rune['pri_eff'][0] == 8:
         print('Purple Spd Slot 2')
         return False
-    if rune['rank'] == 15:
-        print('Legend 6 Star Keep')
+    if rune['pri_eff'][0] == 4 and rune['slot_no'] == 6:
+        print('Purple Atk Slot 6')
         return False
+    print('Checking purple 6 rune for spd subs')
     for subStats in rune['sec_eff']:
         if subStats[0] == 8:
             print('Found Spd Sub')
             return False
     print('Found No Spd Sub')
+    for subStats in rune['sec_eff']:
+        if subStats[0] == 10:
+            if subStats[1] == 7:
+                print('Found Max CD Roll')
+                return False
     return True
+
+
+def ancient_grind_quality_check(changestone):
+    # true is sell false is keep
+    s = str(changestone[0]['craft_type_id'])
+    print(s)
+    out = []
+    while len(s):
+        out.insert(0, s[-2:])
+        s = s[:-2]
+    print(out)
+    if out[1] == '08':
+        print('Spd Changestone')
+        return False
+    if out[2] == '15':
+        print('Found Legend Grind')
+        return False
+    if out[1] == '02' or out[1] == '04' or out[1] == '06':
+        print('Primary Stats grind')
+        return False
+    if out[2] == '13':
+        print('Sell blue grinds')
+        return True
+    if out[1] == '01' or out[1] == '03' or out[1] == '05':
+        print('Flat stats purple')
+        return True
+    print('Purple Gem that is not flat. Keep!')
+    return False
+
+
+def grind_quality_check(changestone):
+    # true is sell false is keep
+    # print(changestone)
+    s = str(changestone['craft_type_id'])
+    out = []
+    while len(s):
+        out.insert(0, s[-2:])
+        s = s[:-2]
+    print(out)
+    if out[2] == '05':
+        print('Found Legend Grind')
+        return False
+    if out[1] == '08':
+        print('Spd Grind/Gem')
+        return False
+    if out[2] == '03':
+        print('Sell blue grinds')
+        return True
+    if out[1] == '02' or out[1] == '04' or out[1] == '06':
+        print('Primary Purple Stats grind')
+        return False
+    if out[1] == '01' or out[1] == '03' or out[1] == '05':
+        print('Flat stats purple')
+        return True
+    print('Purple Gem that is not flat. Keep!')
+    return False
 
 
 def keep_hp_slot(rune):
@@ -245,6 +312,13 @@ def raid_drop_check(drop):
     if drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 8:
         print('Keep Spd Grind')
         return True
+    if drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_set_id'] == 13 or drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_set_id'] == 3 or drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_set_id'] == 15:
+        print('Major sets, violent, swift, or will')
+        if drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 2 or \
+                drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 4 or \
+                drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 6:
+            print('blue % stats')
+            return True
     if drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_rank'] <= 3:
         print('Throw away grind blue rune')
         return False
@@ -289,30 +363,45 @@ def guild_maze_pick():
 def dim_hole_result():
     global run_count
     global refill_count
+    global grind_kept
+    global runes_kept
     data = request.json
+    drop = ""
     # print(data['reward'])
     grab_chest()
     # craft_type 6 is grindstone and 5 is gemstone Last Number is the grade of the GEM/GRIND
     print(data['reward']['crate'])
-    try:
-        if data['reward']['crate']['rune']:
-            if ancient_rune_quality_check(data['reward']['crate']['rune']):
-                print('Selling Rune!')
-                move_mouse(sell_rune_cord[0], sell_rune_cord[1])
-                move_mouse(sell_rune_confirm_cord[0], sell_rune_confirm_cord[1])
-            else:
-                move_mouse(get_rune_cord[0], get_rune_cord[1])
-                print('Keeping Rune!')
-                print(data['reward']['crate']['rune'])
-        elif data['reward']['crate']['changestones']:
-            print('Grindstone or Gemstone!')
+    for key in data['reward']['crate'].keys():
+        print(key)
+        drop = key
+    if drop == 'rune':
+        if ancient_rune_quality_check(data['reward']['crate']['rune']):
+            print('Selling Rune!')
+            move_mouse(sell_rune_cord[0], sell_rune_cord[1])
+            move_mouse(sell_rune_confirm_cord[0], sell_rune_confirm_cord[1])
         else:
-            move_mouse(dim_hole_ok_button_cord[0], dim_hole_ok_button_cord[1])
-            print('Grabbing Extra Dungeon Drop');
-    except:
+            move_mouse(get_rune_cord[0], get_rune_cord[1])
+            print('Keeping Rune!')
+            print(data['reward']['crate']['rune'])
+            runes_kept += 1
+    elif drop == 'changestones':
+        print('Grindstone or Gemstone!')
+        if ancient_grind_quality_check(data['reward']['crate']['changestones']):
+            print('Selling Grind!')
+            move_mouse(sell_grind[0], sell_grind[1])
+            move_mouse(confirm_sell_grind[0], confirm_sell_grind[1])
+
+        else:
+            print('Keeping Grind!')
+            grind_kept += 1
+            move_mouse(dim_hole_collect_grindstone[0], dim_hole_collect_grindstone[1])
+    else:
         move_mouse(dim_hole_ok_button_cord[0], dim_hole_ok_button_cord[1])
-        # move_mouse(dim_hole_collect_grindstone[0], dim_hole_collect_grindstone[1])
+        print('Grabbing Extra Dungeon Drop');
+    time.sleep(.5)
     move_mouse(replay_button_cord[0], replay_button_cord[1])
+    print('Runes Kept', runes_kept)
+    print('Grind Kept', grind_kept)
     return jsonify({"message": "Good Response"})
 
 
@@ -347,20 +436,38 @@ def toa_result():
 def rift_dungeons():
     global run_count
     global refill_count
-    print(request.json)
+    global runes_kept
+    global grind_kept
+    # print(request.json)
     data = request.json
-    print(data['item_list'][3]['type'])
+    # print(data['item_list'][3]['type'])
     grab_chest()
     if data['item_list'][3]['type'] == 8:
         print('Found rune!')
         if rune_quality_check(data['item_list'][3]['info']):
+            print('Selling Rune')
             move_mouse(open_rune_cord[0], open_rune_cord[1])
             move_mouse(rift_sell_rune_cord[0], rift_sell_rune_cord[1])
+            time.sleep(.3)
             move_mouse(rift_sell_rune_confirm_cord[0], rift_sell_rune_confirm_cord[1])
+            time.sleep(.3)
         else:
             print('Good Rune!')
+            runes_kept += 1
+    elif data['item_list'][3]['type'] == 27:
+        print('Found Grindstone or Gem')
+        if grind_quality_check(data['item_list'][3]['info']):
+            print('Selling Grind')
+            move_mouse(open_rune_cord[0], open_rune_cord[1])
+            move_mouse(sell_grind[0], sell_grind[1])
+            time.sleep(.3)
+            move_mouse(confirm_sell_grind[0], confirm_sell_grind[1])
+            time.sleep(.3)
+        else:
+            print('Taking Grind/Gem')
+            grind_kept += 1
     else:
-        print('Pass')
+        print('Extra Item Drop')
     move_mouse(closed_reward_window_cord[0], closed_reward_window_cord[1])
     time.sleep(2)
     move_mouse(replay_button_cord[0], replay_button_cord[1])
@@ -375,7 +482,9 @@ def rift_dungeons():
         refill_energy()
         move_mouse(replay_button_cord[0], replay_button_cord[1])
     run_count += 1
-    print(run_count)
+    print('Run Count', run_count)
+    print('Runes Kept', runes_kept)
+    print('Grind Kept', grind_kept)
     return jsonify({"message": "Good Response"})
 
 
@@ -399,7 +508,9 @@ def carios_dungeon():
     global run_count
     global refill_count
     global runes_kept
+    global artifact_kept
     data = request.json
+    # print(data)
     grab_chest()
     # print(data['changed_item_list'])
     if data['changed_item_list'][0]['type'] == 8:
@@ -413,6 +524,11 @@ def carios_dungeon():
             print('Getting Rune')
             runes_kept += 1
             move_mouse(get_rune_cord[0], get_rune_cord[1])
+    elif data['changed_item_list'][0]['type'] == 73:
+        print('Found artifact! and Getting')
+        print(data['changed_item_list'][0]['info'])
+        artifact_kept += 1
+        move_mouse(get_rune_cord[0], get_rune_cord[1])
     else:
         print('No Rune Found!')
         move_mouse(ok_button_cord[0], ok_button_cord[1])
@@ -430,6 +546,7 @@ def carios_dungeon():
     run_count += 1
     print('Run Count ', run_count)
     print('Rune Kept ', runes_kept)
+    print('Artifact Kept', artifact_kept)
     return jsonify({"message": "Good Response"})
 
 
@@ -458,9 +575,9 @@ def raid_dungeon():
             print('Sell')
             time.sleep(.4)
             d.click(sell_grind[0], sell_grind[1])
-            time.sleep(.4)
+            time.sleep(.7)
             d.click(confirm_sell_grind[0], confirm_sell_grind[1])
-            time.sleep(.4)
+            time.sleep(.7)
 
     else:
         print('Extra Drop')
@@ -479,7 +596,7 @@ def raid_dungeon():
 
 
 @app.route('/BattleEventInstanceResult/', methods=['POST'])
-def event_dungeon():
+def sd_event_dungeon():
     global run_count
     global refill_count
     global runes_kept
