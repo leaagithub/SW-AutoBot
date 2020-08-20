@@ -16,7 +16,8 @@
 def __init__(self):
     pass
 
-
+b12 = 9
+b10 = 8
 refill_count_limit = 9
 fail_count_limit = 3
 replay_button_cord = [500, 500]
@@ -29,6 +30,8 @@ refill_button_cord = [720, 530]
 refill_shop_exit_cord = [1500, 100]
 event_ok_button_cord = [800, 690]
 sd_pieces_cord = [800, 677]
+sell_arti_cord = [675, 725]
+
 
 # Dim Hole Cord
 dim_hole_ok_button_cord = [800, 750]
@@ -42,7 +45,7 @@ rift_sell_rune_cord = [660, 660]
 rift_sell_rune_confirm_cord = [650, 530]
 
 #Raid 5 Coords
-raid_player_slot = 0
+raid_player_slot = 2
 raid_start_battle = [1414, 777]
 open_chest = [1500, 55]
 get_grind = [920, 630]

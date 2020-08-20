@@ -43,6 +43,9 @@ module.exports = {
           case 'BattleDimensionHoleDungeonResult':
             sendData(proxy,resp,command)
             break;
+          case 'BattleDimensionHoleDungeonResult_v2':
+            sendData(proxy,resp,command)
+            break;
           case 'BattleRiftOfWorldsRaidResult':
             sendData(proxy,resp,command)
             break;
@@ -62,6 +65,12 @@ module.exports = {
             sendData(proxy,resp,command)
             break;
           case 'BattleEventInstanceResult':
+            sendData(proxy,resp,command)
+            break;
+          case 'WriteClientLog':
+            sendData(proxy,resp,command)
+            break;
+          case 'GetWizardInfo':
             sendData(proxy,resp,command)
             break;
         }
