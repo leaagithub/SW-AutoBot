@@ -17,7 +17,8 @@ fail_count = 0
 runes_kept = 0
 grind_kept = 0
 artifact_kept = 0
-dung_energy = b10
+legend_count = 0
+dung_energy = b12
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 adb = adbutils.AdbClient(host="127.0.0.1", port=5037)
@@ -34,6 +35,7 @@ def __init__(self):
 
 
 def rune_quality_check(rune):
+    global legend_count
     if rune['rank'] == 5:
         print('Legend 6 Star')
         if rune['slot_no'] == 2:
@@ -41,7 +43,13 @@ def rune_quality_check(rune):
             if rune['pri_eff'][0] == 1 or rune['pri_eff'][0] == 3 or rune['pri_eff'][0] == 5:
                 print('Flat stats slot 2 legendary 6')
                 return True
+        legend_count += 1
         return False
+    if rune['slot_no'] == 2:
+        print('Slot 2')
+        if rune['pri_eff'][0] == 1 or rune['pri_eff'][0] == 3 or rune['pri_eff'][0] == 5:
+            print('Flat stats slot 2')
+            return True
     if rune['set_id'] == 15:
         print('Found will rune')
         if not keep_hp_slot(rune):
@@ -94,12 +102,17 @@ def rune_quality_check(rune):
             print('Found Spd Sub')
             return False
     print('Found No Spd Sub')
-    for subStats in rune['sec_eff']:
-        if subStats[0] == 10:
-            if subStats[1] == 7:
-                print('Found Max CD Roll')
-                return False
-    print('Found No Max CD Sub')
+    if rune['slot_no'] == 2 or rune['slot_no'] == 4 or rune['slot_no'] == 6:
+        print('2/4/6 slot checking if flat')
+        if rune['pri_eff'][0] == 1 or rune['pri_eff'][0] == 3 or rune['pri_eff'][0] == 5:
+            print('Flat stats atk subs, Sell')
+            return True
+        for subStats in rune['sec_eff']:
+            if subStats[0] == 10:
+                if subStats[1] == 7:
+                    print('Found Max CD Roll')
+                    return False
+        print('Found No Max CD Sub')
     return True
 
 
@@ -135,7 +148,7 @@ def ancient_rune_quality_check(rune):
     print('Found No Spd Sub')
     for subStats in rune['sec_eff']:
         if subStats[0] == 10:
-            if subStats[1] == 7:
+            if subStats[1] >= 7:
                 print('Found Max CD Roll')
                 return False
     return True
@@ -214,13 +227,22 @@ def keep_hp_slot(rune):
             return True
     for subStats in rune['sec_eff']:
         if subStats[0] == 8:
-            print('6 star rune spd sub keep')
-            return False
+            if subStats[1] > 5:
+                print('6 star rune spd sub keep')
+                return False
     print('Found No Spd Sub return bad')
     return True
 
 
 def atk_subs(rune):
+    if rune['pri_eff'][0] == 4 and rune['slot_no'] == 6:
+        print('Atk Slot 6')
+        return False
+    if rune['slot_no'] == 2 or rune['slot_no'] == 4 or rune['slot_no'] == 6:
+        print('2/4/6 slot checking if flat')
+        if rune['pri_eff'][0] == 1 or rune['pri_eff'][0] == 3 or rune['pri_eff'][0] == 5:
+            print('Flat stats atk subs, Sell')
+            return True
     for subStats in rune['sec_eff']:
         if subStats[0] == 9:
             print('6 star rune crt sub keep')
@@ -280,6 +302,7 @@ def ancient_keep_spd_sub(rune):
 def artifact_check(artifact):
     # False is keep, True is sell
     # unit_style 1 atk, 2 def, 3 hp, 4 support
+    # attribute 1 is water, 2 is fire, 3 is wind, 4 is light, 5 is dark
     if artifact['natural_rank'] == 5:
         print('Found Legend arti')
         return False
@@ -322,8 +345,27 @@ def atk_artifact_check(artifact):
                 if x[1] == 6:
                     print('Found 6% CD s2 Keep')
                     return False
+        print('Found no good high roll substats')
         return True
-    print('Found purple arti')
+    if artifact['natural_rank'] == 4:
+        print('Purple Artifact')
+        for x in artifact['sec_effects']:
+            print(x[0], x[1])
+            if x[0] == 210:
+                print('Bomb dmg found')
+                return False
+            if x[0] == 209:
+                print('Team up dmg found')
+                return False
+            if x[0] == 402:
+                print('Cd 3 found')
+                return False
+            if x[0] == 401:
+                print('Cd 2 found')
+                return False
+        print('Found no good substats')
+        return True
+    print('Found legend arti')
     return False
 
 
@@ -331,6 +373,7 @@ def hp_artifact_check(artifact):
     if artifact['natural_rank'] == 3:
         print('Blue artifact')
         for x in artifact['sec_effects']:
+            print(x[0], x[1])
             if x[0] == 402:
                 print('Cd 3 found')
                 if x[1] == 6:
@@ -341,16 +384,41 @@ def hp_artifact_check(artifact):
                 if x[1] == 6:
                     print('Found 6% CD s2 Keep')
                     return False
+        print('Found no good high roll substats')
         return True
-    print('Found purple arti')
+    if artifact['natural_rank'] == 4:
+        print('Purple artifact')
+        for x in artifact['sec_effects']:
+            print(x[0], x[1])
+            if x[0] == 402:
+                print('Cd 3 found')
+                return False
+            if x[0] == 401:
+                print('Cd 2 found')
+                return False
+        print('Found no good substats')
+        return True
+    print('Found legend arti')
     return False
 
 
 def def_artifact_check(artifact):
     if artifact['natural_rank'] == 3:
-        print('Blue artifact')
+        print('Blue artifact bye bye')
         return True
-    print('Found purple arti')
+    if artifact['natural_rank'] == 4:
+        print('purple artifact')
+        for x in artifact['sec_effects']:
+            print(x[0], x[1])
+            if x[0] == 402:
+                print('Cd 3 found')
+                return False
+            if x[0] == 401:
+                print('Cd 2 found')
+                return False
+        print('Found no good substats')
+        return True
+    print('Found legend arti')
     return False
 
 
@@ -389,8 +457,33 @@ def sup_artifact_check(artifact):
                 if x[1] == 6:
                     print('Found 6% Acc s2 Keep')
                     return False
+        print('Found no good high roll substats')
         return True
-    print('Found purple arti')
+    if artifact['natural_rank'] == 4:
+        print('Blue artifact')
+        for x in artifact['sec_effects']:
+            print(x[0], x[1])
+            if x[0] == 402:
+                print('Cd 3 found')
+                return False
+            if x[0] == 401:
+                print('Cd 2 found')
+                return False
+            if x[0] == 406:
+                print('Recovery 3 found')
+                return False
+            if x[0] == 405:
+                print('Recovery 2 found')
+                return False
+            if x[0] == 409:
+                print('Acc 3 found')
+                return False
+            if x[0] == 408:
+                print('Acc 2 found')
+                return False
+        print('Found no good substats')
+        return True
+    print('Found legend arti')
     return False
 
 
@@ -415,7 +508,7 @@ def refill_energy():
     time.sleep(5)
     move_mouse(refill_button_cord[0], refill_button_cord[1])
     time.sleep(5)
-    move_mouse(refill_button_cord[0], refill_button_cord[1])
+    move_mouse(refill_button_cord_190[0], refill_button_cord_190[1])
     time.sleep(5)
     move_mouse(refill_button_cord[0], refill_button_cord[1])
     time.sleep(5)
@@ -432,6 +525,9 @@ def shutdown_server():
 
 
 def raid_drop_check(drop):
+    if drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_rank'] == 5:
+        print('Keep legend')
+        return True
     if drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 8:
         print('Keep Spd Grind')
         return True
@@ -447,9 +543,6 @@ def raid_drop_check(drop):
     if drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_rank'] <= 3:
         print('Throw away grind blue rune')
         return False
-    if drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_rank'] == 5:
-        print('Keep legend')
-        return True
     if drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 5 or \
             drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 1 or \
             drop['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_effect_id'] == 3:
@@ -577,6 +670,14 @@ def dim_hole_result2():
         move_mouse(dim_hole_ok_button_cord[0], dim_hole_ok_button_cord[1])
         print('Grabbing Extra Dungeon Drop');
     time.sleep(.5)
+
+    try:
+        if data['reward']['event_crate']:
+            print('Found event seal!')
+            move_mouse(event_ok_button_cord[0], event_ok_button_cord[1])
+    except:
+        print('No event')
+
     move_mouse(replay_button_cord[0], replay_button_cord[1])
     print('Runes Kept', runes_kept)
     print('Grind Kept', grind_kept)
@@ -648,6 +749,14 @@ def rift_dungeons():
         print('Extra Item Drop')
     move_mouse(closed_reward_window_cord[0], closed_reward_window_cord[1])
     time.sleep(2)
+
+    try:
+        if data['reward']['event_crate']:
+            print('Found event seal!')
+            move_mouse(event_ok_button_cord[0], event_ok_button_cord[1])
+    except:
+        print('No event')
+
     move_mouse(replay_button_cord[0], replay_button_cord[1])
     if data['wizard_info']['wizard_energy'] < 8:
         refill_count += 1
@@ -694,10 +803,12 @@ def carios_dungeon():
     global refill_count
     global runes_kept
     global artifact_kept
+    global legend_count
     data = request.json
     print(data)
     grab_chest()
     # print(data['changed_item_list'])
+
     if data['changed_item_list'][0]['type'] == 8:
         print('Found Rune!')
         print(data['changed_item_list'][0]['info'])
@@ -723,7 +834,22 @@ def carios_dungeon():
     else:
         print('No Rune Found!')
         move_mouse(ok_button_cord[0], ok_button_cord[1])
+        # move_mouse(essence_ok_button_cord[0], essence_ok_button_cord[1])
     time.sleep(2)
+
+    if data['changed_item_list'][-1]['type'] == 30:
+        print('Found SD')
+        move_mouse(sd_dungeon_find[0], sd_dungeon_find[1])
+    else:
+        print('NO SD')
+
+    try:
+        if data['reward']['event_crate']:
+            print('Found event seal!')
+            move_mouse(event_ok_button_cord[0], event_ok_button_cord[1])
+    except:
+        print('No event')
+
     move_mouse(replay_button_cord[0], replay_button_cord[1])
     if data['wizard_info']['wizard_energy'] < dung_energy:
         refill_count += 1
@@ -737,6 +863,7 @@ def carios_dungeon():
     run_count += 1
     print('Run Count ', run_count)
     print('Rune Kept ', runes_kept)
+    print('Legend Count', legend_count)
     print('Artifact Kept', artifact_kept)
     return jsonify({"message": "Good Response"})
 
@@ -767,8 +894,10 @@ def raid_dungeon():
             time.sleep(.4)
             d.click(sell_grind[0], sell_grind[1])
             time.sleep(.7)
-            d.click(confirm_sell_grind[0], confirm_sell_grind[1])
-            time.sleep(.7)
+            if data['battle_reward_list'][raid_player_slot]['reward_list'][0]['runecraft_rank'] == 4:
+                print('Sell purple extra click')
+                d.click(confirm_sell_grind[0], confirm_sell_grind[1])
+                time.sleep(1.3)
 
     else:
         print('Extra Drop')

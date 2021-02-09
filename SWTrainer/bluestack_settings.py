@@ -27,8 +27,10 @@ sell_rune_cord = [660, 740]
 sell_rune_confirm_cord = [650, 530]
 get_rune_cord = [930, 720]
 refill_button_cord = [720, 530]
+refill_button_cord_190 = [1000,500]
 refill_shop_exit_cord = [1500, 100]
-event_ok_button_cord = [800, 690]
+event_ok_button_cord = [800, 630]
+essence_ok_button_cord = [800, 765]
 sd_pieces_cord = [800, 677]
 sell_arti_cord = [675, 725]
 
@@ -44,8 +46,11 @@ closed_reward_window_cord = [800, 750]
 rift_sell_rune_cord = [660, 660]
 rift_sell_rune_confirm_cord = [650, 530]
 
+sd_dungeon_find=[800,700]
+
 #Raid 5 Coords
-raid_player_slot = 2
+raid_player_slot = 1
+# LEFT IS 1 , RIGHT IS 2, MIDDLE IS 0
 raid_start_battle = [1414, 777]
 open_chest = [1500, 55]
 get_grind = [920, 630]
