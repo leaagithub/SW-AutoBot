@@ -3,14 +3,17 @@ import os
 import flask
 import adbutils
 import time
+import random
 from flask import request, jsonify
+from discord_webhook import DiscordWebhook
 from SWTrainer.bluestack_settings import *
 
-# from bluestack_settings import *
-# os.system('cmd /c "HD-adb kill-server"')
-# os.system('cmd /c "HD-adb start-server"')
-# time.sleep(5)
 os.system('cmd /c "HD-adb devices"')
+
+# Carios Dungeon
+current_run_count = 0
+repeat_10_times = 1
+
 run_count = 0
 refill_count = 0
 fail_count = 0
@@ -18,6 +21,9 @@ runes_kept = 0
 grind_kept = 0
 artifact_kept = 0
 legend_count = 0
+drop_box = [None] * 10
+selling_purple_rune = False
+
 dung_energy = b12
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
@@ -26,12 +32,39 @@ print(adb.devices())
 output = adb.connect("127.0.0.1:5555")
 print(output)
 d = adb.device(serial="emulator-5554")
+url = "https://discord.com/api/webhooks/658413169420664832/7mVV_FmhuQD4tBM6-4vSsP9ZR8onBRA0wH-jhzrPWIX3I_c1MI5w9eoZ8_QCWPtXIzP-"  # webhook url, from here: https://i.imgur.com/aT3AThK.png
+allowed_mentions = {
+    "users": ["148272448381517824", "1234"]
+}
+content = "Hi Starting Python.."
 
 
 # C:\Program Files\BlueStacks
 
-def __init__(self):
-    pass
+
+def reset_run_auto_func():
+    print('Resetting Run')
+    random_number = random.randint(0, 100)
+    time.sleep(10 + (random_number / 100))
+    move_mouse(replay_button_cord_auto[0], replay_button_cord_auto[1])
+    random_number = random.randint(0, 100)
+    time.sleep(3 + (random_number / 100))
+    move_mouse(start_battle_cord_auto[0], start_battle_cord_auto[1])
+
+
+def refill_energy_auto_func():
+    time.sleep(5)
+    move_mouse(refill_energy_auto[0], refill_energy_auto[1])
+    time.sleep(5)
+    move_mouse(shop_auto[0], shop_auto[1])
+    time.sleep(5)
+    move_mouse(store_energy_auto[0], store_energy_auto[1])
+    time.sleep(5)
+    move_mouse(yes_auto[0], yes_auto[1])
+    time.sleep(5)
+    move_mouse(ok_auto[0], ok_auto[1])
+    time.sleep(5)
+    move_mouse(exit_energy_store_auto[0], exit_energy_store_auto[1])
 
 
 def rune_quality_check(rune):
@@ -52,6 +85,11 @@ def rune_quality_check(rune):
             return True
     if rune['set_id'] == 15:
         print('Found will rune')
+        # for subStats in rune['sec_eff']:
+        #     if subStats[0] == 10:
+        #         if subStats[1] == 7:
+        #             print('Found Max CD Roll')
+        #             return False
         if not keep_hp_slot(rune):
             return False
     if rune['set_id'] == 19:
@@ -60,6 +98,15 @@ def rune_quality_check(rune):
             return False
     if rune['set_id'] == 13:
         print('Found violent rune')
+        for subStats in rune['sec_eff']:
+            if subStats[0] == 10:
+                if subStats[1] == 7:
+                    print('Found Max CD Roll')
+                    return False
+        if not keep_hp_slot(rune):
+            return False
+    if rune['set_id'] == 14:
+        print('Found Nemesis Rune rune')
         if not keep_hp_slot(rune):
             return False
     if rune['set_id'] == 3:
@@ -82,6 +129,11 @@ def rune_quality_check(rune):
             return False
     if rune['set_id'] == 5:
         print('Found rage purple rune')
+        for subStats in rune['sec_eff']:
+            if subStats[0] == 10:
+                if subStats[1] == 7:
+                    print('Found Max CD Roll')
+                    return False
         if not atk_subs(rune):
             return False
     if rune['set_id'] == 4:
@@ -107,11 +159,6 @@ def rune_quality_check(rune):
         if rune['pri_eff'][0] == 1 or rune['pri_eff'][0] == 3 or rune['pri_eff'][0] == 5:
             print('Flat stats atk subs, Sell')
             return True
-        for subStats in rune['sec_eff']:
-            if subStats[0] == 10:
-                if subStats[1] == 7:
-                    print('Found Max CD Roll')
-                    return False
         print('Found No Max CD Sub')
     return True
 
@@ -228,7 +275,7 @@ def keep_hp_slot(rune):
     for subStats in rune['sec_eff']:
         if subStats[0] == 8:
             if subStats[1] > 5:
-                print('6 star rune spd sub keep')
+                print('6 star rune max spd sub keep')
                 return False
     print('Found No Spd Sub return bad')
     return True
@@ -564,112 +611,49 @@ def fast_refill_energy():
     move_mouse(refill_shop_exit_cord[0], refill_shop_exit_cord[1])
 
 
-@app.route('/shutdown', methods=['GET'])
-def shutdown():
-    shutdown_server()
-    return 'Server shutting down...'
-
-
-@app.route('/pickGuildMazeBattleClearReward/', methods=['POST'])
-def guild_maze_pick():
-    print(request.json)
-    data = request.json
-    return jsonify({"message": "Good Response"})
-
-
-@app.route('/GetWizardInfo/', methods=['POST'])
-def getwizardinfo():
-    print(request.json)
-    data = request.json
-    return jsonify({"message": "Good Response"})
-
-
-@app.route('/BattleDimensionHoleDungeonResult/', methods=['POST'])
-def dim_hole_result():
+def carios_dungeon_no_repeat(data):
     global run_count
     global refill_count
-    global grind_kept
     global runes_kept
-    data = request.json
-    drop = ""
-    # print(data['reward'])
+    global artifact_kept
+    global legend_count
+    print('test')
     grab_chest()
-    # craft_type 6 is grindstone and 5 is gemstone Last Number is the grade of the GEM/GRIND
-    print(data['reward']['crate'])
-    for key in data['reward']['crate'].keys():
-        print(key)
-        drop = key
-    if drop == 'rune':
-        if ancient_rune_quality_check(data['reward']['crate']['rune']):
-            print('Selling Rune!')
-            move_mouse(sell_rune_cord[0], sell_rune_cord[1])
-            move_mouse(sell_rune_confirm_cord[0], sell_rune_confirm_cord[1])
-        else:
-            move_mouse(get_rune_cord[0], get_rune_cord[1])
-            print('Keeping Rune!')
-            print(data['reward']['crate']['rune'])
-            runes_kept += 1
-    elif drop == 'changestones':
-        print('Grindstone or Gemstone!')
-        if ancient_grind_quality_check(data['reward']['crate']['changestones']):
-            print('Selling Grind!')
-            move_mouse(sell_grind[0], sell_grind[1])
-            move_mouse(confirm_sell_grind[0], confirm_sell_grind[1])
+    # print(data['changed_item_list'])
 
-        else:
-            print('Keeping Grind!')
-            grind_kept += 1
-            move_mouse(dim_hole_collect_grindstone[0], dim_hole_collect_grindstone[1])
-    else:
-        move_mouse(dim_hole_ok_button_cord[0], dim_hole_ok_button_cord[1])
-        print('Grabbing Extra Dungeon Drop');
-    time.sleep(.5)
-    move_mouse(replay_button_cord[0], replay_button_cord[1])
-    print('Runes Kept', runes_kept)
-    print('Grind Kept', grind_kept)
-    return jsonify({"message": "Good Response"})
-
-
-@app.route('/BattleDimensionHoleDungeonResult_v2/', methods=['POST'])
-def dim_hole_result2():
-    # 8 Rune 27 Grindstone/Gem #29 crafting
-    global run_count
-    global refill_count
-    global grind_kept
-    global runes_kept
-    data = request.json
-    drop = ""
-    grab_chest()
-    # print(data)
-    # print(data['changed_item_list'][0])
-    print(data['changed_item_list'][0]['type'])
     if data['changed_item_list'][0]['type'] == 8:
-        print('Rune!')
-        if ancient_rune_quality_check(data['changed_item_list'][0]['info']):
-            print('Selling Rune!')
+        print('Found Rune!')
+        print(data['changed_item_list'][0]['info'])
+        if rune_quality_check(data['changed_item_list'][0]['info']):
+            print('Selling Rune')
             move_mouse(sell_rune_cord[0], sell_rune_cord[1])
             move_mouse(sell_rune_confirm_cord[0], sell_rune_confirm_cord[1])
         else:
-            move_mouse(get_rune_cord[0], get_rune_cord[1])
-            print('Keeping Rune!')
-            print(data['changed_item_list'][0]['info'])
+            print('Getting Rune')
             runes_kept += 1
-    elif data['changed_item_list'][0]['type'] == 27:
-        print('Grindstone or Gemstone!')
-        if ancient_grind_quality_check(data['changed_item_list'][0]['info']):
-            print('Selling Grind!')
-            move_mouse(sell_grind[0], sell_grind[1])
-            move_mouse(confirm_sell_grind[0], confirm_sell_grind[1])
-
+            move_mouse(get_rune_cord[0], get_rune_cord[1])
+    elif data['changed_item_list'][0]['type'] == 73:
+        print('Found artifact! and Getting')
+        print(data['changed_item_list'][0]['info'])
+        if artifact_check(data['changed_item_list'][0]['info']):
+            print('Selling artifact')
+            move_mouse(sell_arti_cord[0], sell_arti_cord[1])
+            move_mouse(sell_rune_confirm_cord[0], sell_rune_confirm_cord[1])
         else:
-            print('Keeping Grind!')
-            print(data['changed_item_list'][0]['info'])
-            grind_kept += 1
-            move_mouse(dim_hole_collect_grindstone[0], dim_hole_collect_grindstone[1])
+            print('Keeping artifact')
+            move_mouse(get_rune_cord[0], get_rune_cord[1])
+            artifact_kept += 1
     else:
-        move_mouse(dim_hole_ok_button_cord[0], dim_hole_ok_button_cord[1])
-        print('Grabbing Extra Dungeon Drop');
-    time.sleep(.5)
+        print('No Rune Found!')
+        move_mouse(ok_button_cord[0], ok_button_cord[1])
+        # move_mouse(essence_ok_button_cord[0], essence_ok_button_cord[1])
+    time.sleep(2)
+
+    if data['changed_item_list'][-1]['type'] == 30:
+        print('Found SD')
+        move_mouse(sd_dungeon_find[0], sd_dungeon_find[1])
+    else:
+        print('NO SD')
 
     try:
         if data['reward']['event_crate']:
@@ -679,9 +663,187 @@ def dim_hole_result2():
         print('No event')
 
     move_mouse(replay_button_cord[0], replay_button_cord[1])
-    print('Runes Kept', runes_kept)
-    print('Grind Kept', grind_kept)
+    if data['wizard_info']['wizard_energy'] < (dung_energy*10):
+        refill_count += 1
+        print('Refill Energy for 10x runs', refill_count)
+        if refill_count == refill_count_limit:
+            sys.exit()
+            shutdown()
+            exit()
+        refill_energy()
+        move_mouse(replay_button_cord[0], replay_button_cord[1])
+    if data['wizard_info']['wizard_energy'] < dung_energy:
+        refill_count += 1
+        print('Refill Energy for 1 Run', refill_count)
+        if refill_count == refill_count_limit:
+            sys.exit()
+            shutdown()
+            exit()
+        refill_energy()
+        move_mouse(replay_button_cord[0], replay_button_cord[1])
+    run_count += 1
+    print('Run Count ', run_count)
+    print('Rune Kept ', runes_kept)
+    print('Legend Count', legend_count)
+    print('Artifact Kept', artifact_kept)
     return jsonify({"message": "Good Response"})
+
+
+def carios_dungeon_repeat_10(data):
+    global run_count
+    global refill_count
+    global runes_kept
+    global artifact_kept
+    global legend_count
+    global repeat_10_times
+    global drop_box
+    global selling_purple_rune
+    print('Run Count 10x Auto', run_count)
+    if data['changed_item_list'][0]['type'] == 8:
+        print('Found Rune')
+        if rune_quality_check(data['changed_item_list'][0]['info']):
+            if data['changed_item_list'][0]['info']['rank'] < 5:
+                print('Selling Purple Rune')
+                selling_purple_rune = True
+            print('Sell Rune')
+            drop_box[run_count] = 'Sell'
+        else:
+            print('Keeping Rune!')
+            print(data['changed_item_list'][0]['info'])
+            # content = data['changed_item_list'][0]['info']
+            # webhook = DiscordWebhook(url, content=content, allowed_mentions=allowed_mentions)
+            # response = webhook.execute()
+    elif data['changed_item_list'][0]['type'] == 73:
+        print(data['changed_item_list'][0]['info']['rank'])
+        if data['changed_item_list'][0]['info']['rank'] < 4:
+            print('Only keeping purples and up')
+            drop_box[run_count] = 'Sell'
+        else:
+            print('Keeping purple and up')
+    else:
+        print('No Rune Found!')
+
+    run_count += 1
+    print(drop_box)
+    if data['wizard_info']['wizard_energy'] < dung_energy:
+        content = 'Resetting 10x Run low energy'
+        webhook = DiscordWebhook(url, content=content, allowed_mentions=allowed_mentions)
+        response = webhook.execute()
+        refill_count += 1
+        print('Refill Count ', refill_count)
+        refill_energy_auto_func()
+        print('Selling Items')
+
+        if 'Sell' in drop_box:
+            print('Found Sell Item')
+            move_mouse(sell_selected_button[0], sell_selected_button[1])
+            for i in range(len(drop_box)):
+                if drop_box[i] == 'Sell':
+                    time.sleep(3)
+                    print('Selling', i)
+                    move_mouse(item_box_position[i][0], item_box_position[i][1])
+                    drop_box[i] = 'Empty';
+            move_mouse(sell_selected_button_finish[0], sell_selected_button_finish[1])
+            move_mouse(yes_auto[0], yes_auto[1])
+            if selling_purple_rune:
+                time.sleep(1)
+                move_mouse(dungeon_sell_purple_rune[0], dungeon_sell_purple_rune[1])
+                selling_purple_rune = False
+                print('Selling Purple Rune')
+            run_count = 0
+            reset_run_auto_func()
+    if run_count == 10:
+        content = '10 Run is Done'
+        webhook = DiscordWebhook(url, content=content, allowed_mentions=allowed_mentions)
+        response = webhook.execute()
+        print('Resetting 10 runs')
+        print('Selling Items')
+        time.sleep(3)
+        if data['wizard_info']['wizard_energy'] < (dung_energy*10):
+            content = 'Refilling for 10x Run low energy'
+            webhook = DiscordWebhook(url, content=content, allowed_mentions=allowed_mentions)
+            response = webhook.execute()
+            refill_count += 1
+            print('Refill Count ', refill_count)
+            refill_energy_auto_func()
+        if 'Sell' in drop_box:
+            print('Found Sell Item')
+            move_mouse(sell_selected_button[0], sell_selected_button[1])
+            for i in range(len(drop_box)):
+                if drop_box[i] == 'Sell':
+                    time.sleep(3)
+                    print('Selling', i)
+                    move_mouse(item_box_position[i][0], item_box_position[i][1])
+                    drop_box[i] = 'Empty';
+            move_mouse(sell_selected_button_finish[0], sell_selected_button_finish[1])
+            move_mouse(yes_auto[0], yes_auto[1])
+            if selling_purple_rune:
+                time.sleep(1)
+                move_mouse(dungeon_sell_purple_rune[0], dungeon_sell_purple_rune[1])
+                print('Selling Purple Rune')
+                selling_purple_rune = False
+        run_count = 0
+        reset_run_auto_func()
+
+
+@app.route('/shutdown', methods=['GET'])
+def shutdown():
+    shutdown_server()
+    return 'Server shutting down...'
+
+
+# @app.route('/BattleDimensionHoleDungeonResult_v2/', methods=['POST'])
+# def dim_hole_result2():
+#     # 8 Rune 27 Grindstone/Gem #29 crafting
+#     global run_count
+#     global refill_count
+#     global grind_kept
+#     global runes_kept
+#     data = request.json
+#     drop = ""
+#     grab_chest()
+#     # print(data)
+#     # print(data['changed_item_list'][0])
+#     print(data['changed_item_list'][0]['type'])
+#     if data['changed_item_list'][0]['type'] == 8:
+#         print('Rune!')
+#         if ancient_rune_quality_check(data['changed_item_list'][0]['info']):
+#             print('Selling Rune!')
+#             move_mouse(sell_rune_cord[0], sell_rune_cord[1])
+#             move_mouse(sell_rune_confirm_cord[0], sell_rune_confirm_cord[1])
+#         else:
+#             move_mouse(get_rune_cord[0], get_rune_cord[1])
+#             print('Keeping Rune!')
+#             print(data['changed_item_list'][0]['info'])
+#             runes_kept += 1
+#     elif data['changed_item_list'][0]['type'] == 27:
+#         print('Grindstone or Gemstone!')
+#         if ancient_grind_quality_check(data['changed_item_list'][0]['info']):
+#             print('Selling Grind!')
+#             move_mouse(sell_grind[0], sell_grind[1])
+#             move_mouse(confirm_sell_grind[0], confirm_sell_grind[1])
+#
+#         else:
+#             print('Keeping Grind!')
+#             print(data['changed_item_list'][0]['info'])
+#             grind_kept += 1
+#             move_mouse(dim_hole_collect_grindstone[0], dim_hole_collect_grindstone[1])
+#     else:
+#         move_mouse(dim_hole_ok_button_cord[0], dim_hole_ok_button_cord[1])
+#         print('Grabbing Extra Dungeon Drop');
+#     time.sleep(.5)
+#
+#     try:
+#         if data['reward']['event_crate']:
+#             print('Found event seal!')
+#             move_mouse(event_ok_button_cord[0], event_ok_button_cord[1])
+#     except:
+#         print('No event')
+#
+#     move_mouse(replay_button_cord[0], replay_button_cord[1])
+#     print('Runes Kept', runes_kept)
+#     print('Grind Kept', grind_kept)
+#     return jsonify({"message": "Good Response"})
 
 
 @app.route('/BattleTrialTowerResult_v2/', methods=['POST'])
@@ -804,67 +966,14 @@ def carios_dungeon():
     global runes_kept
     global artifact_kept
     global legend_count
+    global repeat_10_times
     data = request.json
+    if repeat_10_times == 0:
+        carios_dungeon_no_repeat(data)
+    else:
+        carios_dungeon_repeat_10(data)
+
     print(data)
-    grab_chest()
-    # print(data['changed_item_list'])
-
-    if data['changed_item_list'][0]['type'] == 8:
-        print('Found Rune!')
-        print(data['changed_item_list'][0]['info'])
-        if rune_quality_check(data['changed_item_list'][0]['info']):
-            print('Selling Rune')
-            move_mouse(sell_rune_cord[0], sell_rune_cord[1])
-            move_mouse(sell_rune_confirm_cord[0], sell_rune_confirm_cord[1])
-        else:
-            print('Getting Rune')
-            runes_kept += 1
-            move_mouse(get_rune_cord[0], get_rune_cord[1])
-    elif data['changed_item_list'][0]['type'] == 73:
-        print('Found artifact! and Getting')
-        print(data['changed_item_list'][0]['info'])
-        if artifact_check(data['changed_item_list'][0]['info']):
-            print('Selling artifact')
-            move_mouse(sell_arti_cord[0], sell_arti_cord[1])
-            move_mouse(sell_rune_confirm_cord[0], sell_rune_confirm_cord[1])
-        else:
-            print('Keeping artifact')
-            move_mouse(get_rune_cord[0], get_rune_cord[1])
-            artifact_kept += 1
-    else:
-        print('No Rune Found!')
-        move_mouse(ok_button_cord[0], ok_button_cord[1])
-        # move_mouse(essence_ok_button_cord[0], essence_ok_button_cord[1])
-    time.sleep(2)
-
-    if data['changed_item_list'][-1]['type'] == 30:
-        print('Found SD')
-        move_mouse(sd_dungeon_find[0], sd_dungeon_find[1])
-    else:
-        print('NO SD')
-
-    try:
-        if data['reward']['event_crate']:
-            print('Found event seal!')
-            move_mouse(event_ok_button_cord[0], event_ok_button_cord[1])
-    except:
-        print('No event')
-
-    move_mouse(replay_button_cord[0], replay_button_cord[1])
-    if data['wizard_info']['wizard_energy'] < dung_energy:
-        refill_count += 1
-        print('Refill Count ', refill_count)
-        if refill_count == refill_count_limit:
-            sys.exit()
-            shutdown()
-            exit()
-        refill_energy()
-        move_mouse(replay_button_cord[0], replay_button_cord[1])
-    run_count += 1
-    print('Run Count ', run_count)
-    print('Rune Kept ', runes_kept)
-    print('Legend Count', legend_count)
-    print('Artifact Kept', artifact_kept)
     return jsonify({"message": "Good Response"})
 
 

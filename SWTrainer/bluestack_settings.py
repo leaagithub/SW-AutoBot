@@ -13,9 +13,6 @@
 # Usually 10 to avoid captcha
 # 27 is GRINDSTONES AND GEMS
 
-def __init__(self):
-    pass
-
 b12 = 9
 b10 = 8
 refill_count_limit = 9
@@ -35,6 +32,28 @@ sd_pieces_cord = [800, 677]
 sell_arti_cord = [675, 725]
 
 
+#Dungeon 10 Times
+item1_box = [1090, 380]
+item2_box = [1209, 380]
+item3_box = [1331, 380]
+item4_box = [1470, 380]
+item5_box = [1090, 512]
+item6_box = [1209, 512]
+item7_box = [1331, 512]
+item8_box = [1470, 512]
+item9_box = [1090, 640]
+item10_box = [1209, 640]
+item_box_position = [item1_box, item2_box, item3_box, item4_box, item5_box, item6_box, item7_box, item8_box, item9_box, item10_box]
+replay_button_cord_auto = [800, 780]
+start_battle_cord_auto = [1350, 630]
+refill_energy_auto = [958, 206]
+shop_auto = [641, 559]
+store_energy_auto = [971, 457]
+yes_auto = [642, 541]
+ok_auto = [800, 537]
+exit_energy_store_auto = [1509, 93]
+sell_selected_button = [1400,790]
+sell_selected_button_finish = [1140,790]
 # Dim Hole Cord
 dim_hole_ok_button_cord = [800, 750]
 dim_hole_collect_grindstone = [905, 675]
@@ -45,7 +64,7 @@ open_rune_cord = [1000, 500]
 closed_reward_window_cord = [800, 750]
 rift_sell_rune_cord = [660, 660]
 rift_sell_rune_confirm_cord = [650, 530]
-
+dungeon_sell_purple_rune = [650, 588]
 sd_dungeon_find=[800,700]
 
 #Raid 5 Coords
